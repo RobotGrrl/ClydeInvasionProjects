@@ -1,5 +1,9 @@
+// this function is called whenever we want clyde to sing a song. it goes to the
+// next song each time we call it, so you will not become bored by listening to 
+// the exact same song each time.
 void singSong() {
   
+  // call the specific song for a certain number
   if(current_song == 0) {
     heeHeeHooSong();
   } else if(current_song == 1) {
@@ -9,20 +13,22 @@ void singSong() {
   }
   
   current_song++;
-  if(current_song >= num_songs) current_song = 0;
+  if(current_song >= num_songs) current_song = 0; // reset when we hit the max number of songs
   
 }
 
 
+// sort of a funny song. i'm not a musician, so you would probably get better music
+// from a chimpanzee. it's the same template for the next two functions as well.
 void heeHeeHooSong() {
 
-  uint8_t length = 16;
-  char notes[] = "ceg gfa dac efg";
-  uint8_t beats[] = { 4, 1, 1, 1, 4, 1, 1, 1, 4, 1, 1, 1, 4, 1, 1, 1 };
-  uint16_t tempo = 300;
+  uint8_t length = 16; // number of notes
+  char notes[] = "ceg gfa dac efg"; // space represents a rest
+  uint8_t beats[] = { 4, 1, 1, 1, 4, 1, 1, 1, 4, 1, 1, 1, 4, 1, 1, 1 }; // how 'long' each of the notes is played
+  uint16_t tempo = 300; // how fast it all goes
   
   for (int i = 0; i < length; i++) {
-    playSong(notes[i], beats[i], tempo);
+    playSong(notes[i], beats[i], tempo); // send the song to be played
   }
   
 }
@@ -44,8 +50,8 @@ void sillySong() {
 
 void twinkleSong() {
  
-  uint8_t length = 15; // the number of notes
-  char notes[] = "ccggaagffeeddc "; // a space represents a rest
+  uint8_t length = 15;
+  char notes[] = "ccggaagffeeddc ";
   uint8_t beats[] = { 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 4 };
   uint16_t tempo = 300;
   
@@ -56,6 +62,7 @@ void twinkleSong() {
 }
 
 
+// given the note, beat, and tempo, then play a note from this info
 void playSong(char notes, uint8_t beats, uint16_t tempo) {
   
   if (notes == ' ') {
@@ -72,7 +79,6 @@ void playSong(char notes, uint8_t beats, uint16_t tempo) {
 
 // this function is from adafruit
 // https://learn.adafruit.com/adafruit-microphone-amplifier-breakout/measuring-sound-levels
-
 void micSample() {
  
  unsigned long startMillis= millis();  // Start of sample window
@@ -102,19 +108,23 @@ void micSample() {
  
    if(!task_cycle) clyde.setLight( (int)(peakToPeak / 4) );
  
-   if(peakToPeak >= 50) {
+   if(peakToPeak >= 50) { // if there is volume, then cycle the hue
      cycleHue(); 
    } else {
-     last_silence = millis(); 
+     last_silence = millis(); // otherwise set the time that we have heard nothing, just silence
    }
    
-   if(millis()-last_silence >= 500) {
+   // check to see how long ago we have heard nothing. it makes sense because this would be a short 
+   // time if there has been no sound (see above where last_silence is set), or a long time if there
+   // has indeed been sound. the idea is that we want to check if it is actually a song playing, 
+   // rather than just someone talking for a small moment in time.
+   if(millis()-last_silence >= 500) { 
      
-     if(millis()-last_added_humm >= 1000) {
+     if(millis()-last_added_humm >= 1000) { // clyde will 'humm' every 1 second
        
        uint16_t hoot = (int)random(0, 800);
        
-       if(headsOrTails()) {
+       if(headsOrTails()) { // play a few tones...
        
          playTone(hoot, 50);
          delay(50);
@@ -122,7 +132,7 @@ void micSample() {
          delay(50);
          playTone(hoot+400, 50);
          
-       } else {
+       } else { // or play a 'swoop' tone
          
          for(int i=hoot; i<hoot+500; i+=50) {
            playTone(i, 10);
